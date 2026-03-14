@@ -80,6 +80,7 @@ class TransferGroup:
     label: str
     active: bool
     tiers: list[TransferTier] = field(default_factory=list)
+    monthly_fixed_cost: float = 0.0  # €/month, gross (VAT included)
 
     def to_dict(self) -> dict:
         return {
@@ -87,6 +88,7 @@ class TransferGroup:
             "label": self.label,
             "active": self.active,
             "tiers": [t.to_dict() for t in self.tiers],
+            "monthly_fixed_cost": self.monthly_fixed_cost,
         }
 
     @classmethod
@@ -96,6 +98,7 @@ class TransferGroup:
             label=data["label"],
             active=data["active"],
             tiers=[TransferTier.from_dict(t) for t in data.get("tiers", [])],
+            monthly_fixed_cost=data.get("monthly_fixed_cost", 0.0),
         )
 
     def price_at(self, month: int, weekday: int, hour: int) -> float | None:
