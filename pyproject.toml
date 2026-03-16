@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kilowahti"
-version = "2026.3.0"
+version = "2026.3.1"
 requires-python = ">=3.12"
 dependencies = ["aiohttp>=3.9"]
 license = {text = "MIT"}
