@@ -7,6 +7,8 @@ name = "kilowahti"
 version = "2026.3.0"
 requires-python = ">=3.12"
 dependencies = ["aiohttp>=3.9"]
+license = {text = "MIT"}
+readme = "README.md"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "aioresponses>=0.7", "ruff>=0.9"]
