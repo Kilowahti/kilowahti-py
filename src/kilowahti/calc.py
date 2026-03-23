@@ -171,23 +171,24 @@ def compute_score(bucket_data: dict[str, float], formula: str = "default") -> fl
 def cheapest_window(
     slots: list[PriceSlot],
     slots_needed: int,
-    vat_rate: float,
-    commission: float,
+    price_fn: Callable[[PriceSlot], float],
 ) -> tuple[list[PriceSlot], float] | None:
     """Find the consecutive window of slots_needed slots with the lowest average price.
 
+    price_fn is called once per slot to determine its price for comparison.
     Returns (window_slots, avg_price) or None if slots_needed > len(slots).
     """
     if not slots or slots_needed > len(slots):
         return None
 
+    prices = [price_fn(s) for s in slots]
     best_start_idx = 0
-    best_total = sum(spot_effective(s, vat_rate, commission) for s in slots[:slots_needed])
+    best_total = sum(prices[:slots_needed])
     current_total = best_total
 
     for i in range(1, len(slots) - slots_needed + 1):
-        current_total -= spot_effective(slots[i - 1], vat_rate, commission)
-        current_total += spot_effective(slots[i + slots_needed - 1], vat_rate, commission)
+        current_total -= prices[i - 1]
+        current_total += prices[i + slots_needed - 1]
         if current_total < best_total:
             best_total = current_total
             best_start_idx = i

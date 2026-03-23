@@ -339,7 +339,7 @@ def test_cheapest_window_basic():
     # prices: [5.0, 3.0, 2.0, 4.0, 6.0], window=2
     # windows: [5+3=8, 3+2=5, 2+4=6, 4+6=10] → best at index 1 with avg 2.5
     slots = _make_slots_with_prices([5.0, 3.0, 2.0, 4.0, 6.0])
-    result = cheapest_window(slots, slots_needed=2, vat_rate=0.0, commission=0.0)
+    result = cheapest_window(slots, slots_needed=2, price_fn=lambda s: s.price_no_tax)
     assert result is not None
     window, avg = result
     assert len(window) == 2
@@ -350,7 +350,7 @@ def test_cheapest_window_basic():
 
 def test_cheapest_window_single_slot():
     slots = _make_slots_with_prices([7.0, 3.0, 5.0])
-    result = cheapest_window(slots, slots_needed=1, vat_rate=0.0, commission=0.0)
+    result = cheapest_window(slots, slots_needed=1, price_fn=lambda s: s.price_no_tax)
     assert result is not None
     window, avg = result
     assert len(window) == 1
@@ -360,7 +360,7 @@ def test_cheapest_window_single_slot():
 
 def test_cheapest_window_full_range():
     slots = _make_slots_with_prices([4.0, 2.0, 6.0])
-    result = cheapest_window(slots, slots_needed=3, vat_rate=0.0, commission=0.0)
+    result = cheapest_window(slots, slots_needed=3, price_fn=lambda s: s.price_no_tax)
     assert result is not None
     window, avg = result
     assert len(window) == 3
@@ -369,18 +369,20 @@ def test_cheapest_window_full_range():
 
 def test_cheapest_window_too_many_slots_needed():
     slots = _make_slots_with_prices([1.0, 2.0, 3.0])
-    assert cheapest_window(slots, slots_needed=4, vat_rate=0.0, commission=0.0) is None
+    assert cheapest_window(slots, slots_needed=4, price_fn=lambda s: s.price_no_tax) is None
 
 
 def test_cheapest_window_empty_slots():
-    assert cheapest_window([], slots_needed=1, vat_rate=0.0, commission=0.0) is None
+    assert cheapest_window([], slots_needed=1, price_fn=lambda s: s.price_no_tax) is None
 
 
-def test_cheapest_window_respects_vat_and_commission():
-    # With vat_rate=0.255 and commission=0.35, effective = p*1.255+0.35
+def test_cheapest_window_respects_price_fn():
+    # price_fn can apply any transformation; effective = p*1.255+0.35
     # Relative ordering same; window selection unchanged
     slots = _make_slots_with_prices([5.0, 3.0, 2.0, 4.0])
-    result = cheapest_window(slots, slots_needed=2, vat_rate=0.255, commission=0.35)
+    result = cheapest_window(
+        slots, slots_needed=2, price_fn=lambda s: spot_effective(s, 0.255, 0.35)
+    )
     assert result is not None
     window, _ = result
     assert window[0].price_no_tax == 3.0
