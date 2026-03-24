@@ -172,10 +172,13 @@ def cheapest_window(
     slots: list[PriceSlot],
     slots_needed: int,
     price_fn: Callable[[PriceSlot], float],
+    *,
+    prefer_last: bool = False,
 ) -> tuple[list[PriceSlot], float] | None:
     """Find the consecutive window of slots_needed slots with the lowest average price.
 
     price_fn is called once per slot to determine its price for comparison.
+    When prefer_last is True, the latest window is returned on ties (instead of earliest).
     Returns (window_slots, avg_price) or None if slots_needed > len(slots).
     """
     if not slots or slots_needed > len(slots):
@@ -189,7 +192,7 @@ def cheapest_window(
     for i in range(1, len(slots) - slots_needed + 1):
         current_total -= prices[i - 1]
         current_total += prices[i + slots_needed - 1]
-        if current_total < best_total:
+        if current_total < best_total or (prefer_last and current_total == best_total):
             best_total = current_total
             best_start_idx = i
 

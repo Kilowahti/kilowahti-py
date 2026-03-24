@@ -389,6 +389,22 @@ def test_cheapest_window_respects_price_fn():
     assert window[1].price_no_tax == 2.0
 
 
+def test_cheapest_window_prefer_last_returns_latest_on_tie():
+    # prices: [2.0, 3.0, 2.0, 3.0], window=2
+    # windows: [2+3=5, 3+2=5, 2+3=5] — all tied
+    # prefer_last=False → first window (index 0); prefer_last=True → last (index 2)
+    slots = _make_slots_with_prices([2.0, 3.0, 2.0, 3.0])
+    first = cheapest_window(slots, slots_needed=2, price_fn=lambda s: s.price_no_tax)
+    last = cheapest_window(
+        slots, slots_needed=2, price_fn=lambda s: s.price_no_tax, prefer_last=True
+    )
+    assert first is not None and last is not None
+    assert first[0][0].price_no_tax == 2.0 and first[0][1].price_no_tax == 3.0
+    assert last[0][0].price_no_tax == 2.0 and last[0][1].price_no_tax == 3.0
+    assert first[0][0].dt_utc.hour == 0
+    assert last[0][0].dt_utc.hour == 2
+
+
 # ---------------------------------------------------------------------------
 # total_price_rank
 # ---------------------------------------------------------------------------
